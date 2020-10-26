@@ -1,0 +1,22 @@
+east
+take keys, lamp, bottl
+west
+south
+s
+s
+open grate
+d
+w
+get cage
+w
+light lamp
+w
+w
+get bird
+w
+d
+d
+relea bird
+drop cage
+sw
+w
