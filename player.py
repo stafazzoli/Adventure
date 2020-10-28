@@ -20,22 +20,20 @@ class Player:
         self.score = 0
 
     def take_item(self, item: Item) -> None:
-        if item.name in self.location.objects:
+        if item not in self.items:
             if not item.immovable:
-                print(f"{item.description}: Taken.")
+                print(f'{item.description}: Taken.')
                 self.items.append(item)
-                self.location.remove_item(item)
-                item.set_location("player")
+                item.move("player", True if self.location.name == item.locations[1] else False)
             else:
-                print(f"The {item.description} is fixed in place.")
+                print(f'The {item.name} is fixed in place.')
         else:
-            print(f"'{item.name}' does not exist here.")
+            print(f'You are already carrying the {item.name}.')
 
     def drop_item(self, item: Item) -> None:
-        print(f"{item.description}: Dropped.")
-        self.items.pop(item)
-        self.location.add_item(item)
-        item.set_location(self.location.name)
+        print(f'{item.name}: Dropped/ Released.')
+        self.items.remove(item)
+        item.move(self.location)
 
     def destroy_item(self, item_name: str) -> None:
         """
@@ -43,13 +41,12 @@ class Player:
         """
         if self.has_item(item_name):
             item = game.objects[item_name]
-            self.drop_item(item)
         elif self.location.is_item_present(item_name):
             item = self.location.objects[item_name]
         else:
-            raise ValueError(f"Can not destroy '{item_name}'")
+            raise ValueError(f'Can not destroy the {item_name}.')
 
-        item.set_location(None)
+        item.move(None)
 
     def has_item(self, item_name) -> bool:
         """
@@ -79,7 +76,7 @@ class Player:
 
         dest_info = self.location.destinations.get(direction, None)
         dest = None
-        print('***', self.location.name, direction, dest_info)
+        # print('***', self.location.name, direction, dest_info)
         while not dest:
             if isinstance(dest_info, str):
                 dest = game.locations.get(dest_info)
@@ -120,5 +117,11 @@ class Player:
         # 'slit': (('MESSAGE', 95), None, None),
         # 'jump': (('MESSAGE', 96), None, ('PROPERTY (must not be)', 12, 0)),
 
+    def move(self, loc: Location):
+        if self.location != loc:
+            self.location = loc
+            self.trajectory.append(self.location.name)
+            return self.location
+
     def __str__(self):
-        return f"Player is at location {self.location.number} and has a list of items {self.items}"
+        return f'Player is at location {self.location.number} and has a list of items {self.items}'

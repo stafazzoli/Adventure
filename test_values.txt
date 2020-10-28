@@ -20,3 +20,11 @@ relea bird
 drop cage
 sw
 w
+kill drago
+yes
+take rug
+get drago
+n
+d
+s
+d

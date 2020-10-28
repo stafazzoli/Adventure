@@ -77,6 +77,54 @@ class Util:
 
 
 class Command:
+    @classmethod  # 9120
+    def kill(cls, **kwargs):
+        player = kwargs['player']
+        item = kwargs.get('item', None)
+        item_name = item.name if item else None
+
+        spk = Util.get_default_msg_no('kill')
+        if item:
+            if item.name == 'bird':
+                raise NotImplementedError('#9124')
+            else:
+                if item_name == 'clam' or item_name == 'oyster':
+                    spk = 150
+                elif item_name == 'snake':
+                    spk = 46
+                elif item_name == 'dwarf':
+                    spk = 49
+                elif item_name == 'dwarf':
+                    # AND.CLOSED)GOTO 19000
+                    pass
+                elif item_name == 'dragon':
+                    spk = 167
+                elif item_name == 'troll':
+                    spk = 157
+                elif item_name == 'bear':
+                    spk = 165 + (item.prop + 1) / 2
+
+                if item_name != 'dragon' or (item_name == 'dragon' and item.prop != 0):
+                    Util.print_message(spk)
+                    return
+                else:
+                    Util.print_message(49)
+                    resp = Util.get_response()
+                    if resp not in ('y', 'yes'):
+                        return
+                    item.get_message(1)
+                    item.prop = 2
+                    game.objects['rug'].prop = 0
+                    k = sum(game.locations[loc].index for loc in item.locations) // 2
+                    # CALL MOVE(DRAGON+100,-1)
+                    # CALL MOVE(RUG+100,0)
+                    # item.move(None, True) # destroy dragon
+                    game.objects['rug'].immovable = False
+                    loc = next(iter(val for key, val in game.locations.items() if val.index == k))
+                    item.move(loc.name, True)
+                    game.objects['rug'].move(loc.name, True)
+                    player.move(loc)
+
     @classmethod  # 9070
     def on(cls, **kwargs):
         player = kwargs['player']
@@ -157,12 +205,14 @@ class Command:
         item = kwargs.get('item', None)
         item_name = item.name if item else None
 
-        if item and player.has_item(item_name):
+        if not item and location.objects:
+            item = next(iter(v for k, v in location.objects.items()))  # get the first item available in location
+
+        if not item:
+            raise NotImplementedError('#8010')
+        elif item and player.has_item(item_name):
             Util.print_message(Util.get_default_msg_no('get'))
             return
-        elif not item and location.objects:
-            item_name = next(iter(location.objects))  # get the first item available in location
-            player.take_item(location.objects[item_name])
         else:
             if item_name == 'plant' and item.prop < 0:
                 spk = 115
@@ -171,6 +221,7 @@ class Command:
             elif item_name == 'chain' and game.objects['bear'].prop == 0:
                 spk = 170
             elif item.immovable:
+                print(f'The {item_name} is fixed in place.')
                 return
             elif item_name == 'water' or item_name == 'oil':
                 raise NotImplementedError('Not implemented in open()')
@@ -181,13 +232,13 @@ class Command:
                     if item_name != 'bird' or (item_name == 'bird' and item.prop != 0):
                         if (item_name == 'bird' or item_name == 'cage') and game.objects['bird'].prop != 0:
                             bird_index, cage_index = game.objects['bird'].index, game.objects['cage'].index
-                            item_take_index = bird_index - cage_index + item.index
+                            item_take_index = bird_index + cage_index - item.index
                             item_take = next((v for k, v in game.objects.items() if v.index == item_take_index), None)
                             player.take_item(item_take)
                         player.take_item(item)
                         if item_name == 'bottle' and (liq_no := Util.get_liquid_no()) != 0:
-                            item_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
-                            player.take_item(item_take)
+                            liquid_to_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
+                            player.take_item(liquid_to_take)
                         Util.print_message(54)
                         return
 
@@ -196,14 +247,14 @@ class Command:
                             item.prop = 1
                             if (item_name == 'bird' or item_name == 'cage') and game.objects['bird'].prop != 0:
                                 bird_index, cage_index = game.objects['bird'].index, game.objects['cage'].index
-                                item_take_index = bird_index - cage_index + item.index
+                                item_take_index = bird_index + cage_index - item.index
                                 item_take = next((v for k, v in game.objects.items() if v.index == item_take_index),
                                                  None)
                                 player.take_item(item_take)
                             player.take_item(item)
                             if item_name == 'bottle' and (liq_no := Util.get_liquid_no()) != 0:
-                                item_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
-                                player.take_item(item_take)
+                                liquid_to_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
+                                player.take_item(liquid_to_take)
                             Util.print_message(54)
                             return
                         else:
@@ -228,18 +279,34 @@ class Command:
         spk = Util.get_default_msg_no('get')
         if not player.has_item(item.name):
             Util.print_message(spk)
+            return
 
         if not (item_name != 'bird' or not (location.is_item_present('snake'))):
             Util.print_message(30)
             player.destroy_item('snake')
             game.objects['snake'].prop = 1
+            k = Util.get_liquid_no()
+            if k == item.index:
+                item_name = 'bottle'
+            if item_name == 'bottle' and k != 0:
+                pass
+                # PLACE(K) = 0
+            if item_name == 'cage' and game.objects['bird'].prop != 0:
+                player.drop_item(game.objects['bird'])
+
+            if item_name == 'bird':
+                game.objects['bird'].prop = 0
+
+            player.drop_item(item)
+            return
+
         else:
             if not (item_name != 'coins' or not (player.has_item('vend') or location.is_item_present('vend'))):
                 player.destroy_item('coins')
-                player.drop_item('batter')
+                player.drop_item(game.objects['batter'])
                 # CALL PSPEAK(BATTER,0)
             else:
-                if not (item_name != 'bear'):
+                if not (item_name != 'bear' or not location.is_item_present('troll')):
                     raise NotImplementedError('#9026')
                     # 9026	IF(OBJ.NE.BEAR.OR..NOT.AT(TROLL))GOTO 9027
                     # 	CALL RSPEAK(163)
@@ -250,7 +317,25 @@ class Command:
                     # 	CALL JUGGLE(CHASM)
                     # 	PROP(TROLL)=2
                     # 	GOTO 9021
+                else:
+                    if not(item_name == 'vase' and not location.is_item_present('pillow')):
+                        Util.print_message(54)
+                        k = Util.get_liquid_no()
+                        if k == item.index:
+                            item_name = 'bottle'
+                        if item_name == 'bottle' and k != 0:
+                            pass
+                            # PLACE(K) = 0
+                        if item_name == 'cage' and game.objects['bird'].prop != 0:
+                            player.drop_item(game.objects['bird'])
 
+                        if item_name == 'bird':
+                            game.objects['bird'].prop = 0
+
+                        player.drop_item(item)
+                        return
+                    else:
+                        raise NotImplementedError('#9028')
     # 8040, 9040
     @classmethod
     def open(cls, opposite=False, **kwargs):
@@ -369,4 +454,8 @@ class Command:
     @classmethod
     def look(cls, **kwargs) -> None:
         location = kwargs['player'].location
-        location.print_info()
+        if game.detail < 3:
+            Util.print_message(15)
+        game.detail += 1
+        location.abb_desc_no = 0
+        #WZDARK=.FALSE.

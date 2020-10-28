@@ -1,4 +1,5 @@
 from commands import Util
+import game
 
 """
 #  SECTION 5: OBJECT DESCRIPTIONS.  EACH LINE CONTAINS A NUMBER (N), A TAB),
@@ -33,16 +34,24 @@ class Item:
             self.prop = -1  # treasures have prop -1.
 
         self.initial_location = locations  # a tuple, see 7 below
-        self.location = self.initial_location[0]  # location1
-        self.locations = self.initial_location[:2]  # (location1, location2)
+        self.location = self.initial_location[0]    # location1: str
+        self.locations = self.initial_location[:2]  # tuple(location1: str, location2: str)
         self.immovable = self.initial_location[2]
 
-    def set_location(self, loc_name: str, loc2=False) -> None:
+    def move(self, loc_name: str, loc2=False) -> None:
         """
-        Set the location of an item. If loc2 is true, change the second location of the item.
+        Move the item to a new location. If loc2 is true, change the second location of the item.
         location 'player': item is carried by the player
         location 'None': item is destroyed
         """
+        from_loc_name = self.locations[0] if not loc2 else self.locations[1]
+        from_loc = game.locations.get(from_loc_name, None)
+        if from_loc and from_loc.is_item_present(self.name):
+            from_loc.remove_item(self)
+
+        if to_loc := game.locations.get(loc_name, None):
+            to_loc.add_item(self)
+
         self.location = loc_name
         if self.locations[1] == 0 or not loc2:
             self.locations = (loc_name, self.locations[1])

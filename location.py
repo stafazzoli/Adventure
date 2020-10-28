@@ -15,8 +15,8 @@ class Location:
         self.name = name
         self.description = description
         self.short_description = short_description
-        self.destinations = {}  # direction: destination
-        self.objects = objects  # item_name: item_object
+        self.destinations = {}  # dic{direction: destination}
+        self.objects = objects  # dic{item_name: item_object}
         self.abb_desc_no = 0
         self.cond = get_cond(self.name)
 

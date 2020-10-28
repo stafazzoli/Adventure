@@ -11,6 +11,9 @@ from data.vocabulary import TYPE_MOTION, TYPE_OBJECT, TYPE_ACTION
 objects = {}
 locations = {}
 
+# HOW OFTEN WE'VE SAID "NOT ALLOWED TO GIVE MORE DETAIL"
+detail = 0
+
 
 class Adventure:
     """
@@ -66,7 +69,10 @@ class Adventure:
             locations[self.player.location.name].print_info(objects['lantern'], self.player)
 
             available_exists = {dest for dir, dest in locations[self.player.location.name].destinations.items()}
-            direction = input(f"Available exits are:\n{available_exists}\n:").casefold()
+            # direction = input(f"Available exits are:\n{available_exists}\n:").casefold()
+            direction = input(f":").casefold()
+            from colorama import Fore, Style
+            print(Fore.YELLOW, direction, Style.RESET_ALL)
 
             # remove non-alph from the import and interpret each word
             what_to_do = []
