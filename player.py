@@ -41,6 +41,7 @@ class Player:
         """
         if self.has_item(item_name):
             item = game.objects[item_name]
+            self.drop_item(item)
         elif self.location.is_item_present(item_name):
             item = self.location.objects[item_name]
         else:

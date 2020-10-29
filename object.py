@@ -60,7 +60,8 @@ class Item:
 
     def get_message(self, prop: int = None) -> str:
         prop_msg = prop if prop else self.prop
-        Util.color_print('ITEM_INFO', self.messages[prop_msg])
+        if (msg := self.messages[prop_msg]) != '>$<':
+            Util.color_print('ITEM_INFO', msg)
 
     def __str__(self):
         return f"{self.index}-{self.name}:: {self.description}: {self.messages}: {self.prop}: " \

@@ -28,3 +28,24 @@ n
 d
 s
 d
+pour water
+u
+w
+u
+north
+n
+fill bottl
+s
+d
+s
+d
+s
+d
+pour water
+u
+e
+d
+fill bottl
+u
+w
+u

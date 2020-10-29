@@ -75,8 +75,58 @@ class Util:
     def get_response() -> str:
         return input('').casefold()
 
+    @staticmethod
+    def get_item_by_index(index: int):
+        return next((v for k, v in game.objects.items() if v.index == index), None)
+
 
 class Command:
+    @classmethod  # 9130
+    def pour(cls, **kwargs):
+        player = kwargs['player']
+        location = player.location
+        item = kwargs.get('item', None)
+        item_name = item.name if item else None
+
+        spk = Util.get_default_msg_no('pour')
+        if not item or item_name == 'bottle':
+            item = Util.get_item_by_index(Util.get_liquid_no())
+
+        if not item:
+            raise NotImplementedError('#8000')
+        elif not player.has_item(item_name):
+            Util.print_message(spk)
+            return
+
+        spk = 78
+        if item_name != 'water' and item_name != 'oil':
+            Util.print_message(spk)
+            return
+        game.objects['bottle'].prop = 1
+        player.drop_item(item)
+        item.move(None)
+        spk = 77
+        if not (location.is_item_present('plant') or location.is_item_present('door')):
+            Util.print_message(spk)
+            return
+        elif location.is_item_present('door'):
+            door = game.objects['door']
+            door.prop = 0
+            if item_name == 'oil':
+                spk = 113 + door.prop
+                Util.print_message(spk)
+                return
+        elif item_name != 'water':
+            Util.print_message(112)
+            return
+        else:
+            plant, phony_plant = game.objects['plant'], game.objects['phony plant']
+            plant.get_message(plant.prop + 1)
+            plant.prop = plant.prop + 2 % 6
+            phony_plant.prop = plant.prop // 2
+        # 	K=NULL
+        # 	GOTO 8
+
     @classmethod  # 9120
     def kill(cls, **kwargs):
         player = kwargs['player']
@@ -166,37 +216,44 @@ class Command:
         player = kwargs['player']
         location = player.location
         item = kwargs.get('item', None)
+        item_name = item.name if item else None
 
         spk = Util.get_default_msg_no('fill')
-        if item and item.name == 'vase':  # 9222
+        if item_name == 'vase':  # 9222
             spk = 29
             if location.get_liquid_no() == 0:
                 spk = 144
-            if location.get_liquid_no() == 0 or not player.has_item(item.name):
+            if location.get_liquid_no() == 0 or not player.has_item(item_name):
                 Util.print_message(spk)
                 return
             Util.print_message(spk)
             item.prop = 2
-            # FIXED(VASE)=-1 make it immovable
-            # GOTO 9024 --> not make any sense (not related to vase)
+            item.immovable = True
+            raise NotImplementedError('GOTO #9024')
         elif item and item.name != 'bottle':
             Util.print_message(spk)
             return
         elif not item and not (player.has_item('bottle') or location.is_item_present('bottle')):
-            # GOTO 8000 --> then, goto hints
-            return
+            raise NotImplementedError('GOTO #8000')
+
         spk = 107
         if location.get_liquid_no() == 0:
             spk = 106
 
-        liq = Util.get_liquid_no()
-        if liq != 0:
+        if Util.get_liquid_no() != 0:
             spk = 105
         if spk != 107:
             Util.print_message(spk)
             return
         bottle = game.objects['bottle']
-        bottle.prop = (location.cond % 4) / 2 * 2
+        bottle.prop = (location.cond % 4) // 2 * 2
+        liq_item = Util.get_item_by_index(Util.get_liquid_no())
+        if player.has_item('bottle'):
+            player.take_item(liq_item)
+        if liq_item.name == 'oil':
+            spk = 108
+        Util.print_message(spk)
+        return
 
     @classmethod  # 8010 with/ without item
     def get(cls, **kwargs) -> None:
@@ -232,12 +289,11 @@ class Command:
                     if item_name != 'bird' or (item_name == 'bird' and item.prop != 0):
                         if (item_name == 'bird' or item_name == 'cage') and game.objects['bird'].prop != 0:
                             bird_index, cage_index = game.objects['bird'].index, game.objects['cage'].index
-                            item_take_index = bird_index + cage_index - item.index
-                            item_take = next((v for k, v in game.objects.items() if v.index == item_take_index), None)
+                            item_take = Util.get_item_by_index(bird_index + cage_index - item.index)
                             player.take_item(item_take)
                         player.take_item(item)
                         if item_name == 'bottle' and (liq_no := Util.get_liquid_no()) != 0:
-                            liquid_to_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
+                            liquid_to_take = Util.get_item_by_index(liq_no)
                             player.take_item(liquid_to_take)
                         Util.print_message(54)
                         return
@@ -248,12 +304,11 @@ class Command:
                             if (item_name == 'bird' or item_name == 'cage') and game.objects['bird'].prop != 0:
                                 bird_index, cage_index = game.objects['bird'].index, game.objects['cage'].index
                                 item_take_index = bird_index + cage_index - item.index
-                                item_take = next((v for k, v in game.objects.items() if v.index == item_take_index),
-                                                 None)
+                                item_take = Util.get_item_by_index(item_take_index)
                                 player.take_item(item_take)
                             player.take_item(item)
                             if item_name == 'bottle' and (liq_no := Util.get_liquid_no()) != 0:
-                                liquid_to_take = next((v for k, v in game.objects.items() if v.index == liq_no), None)
+                                liquid_to_take = Util.get_item_by_index(liq_no)
                                 player.take_item(liquid_to_take)
                             Util.print_message(54)
                             return
