@@ -81,6 +81,23 @@ class Util:
 
 
 class Command:
+    @classmethod  # 9090
+    def wave(cls, **kwargs):
+        player = kwargs['player']
+        location = player.location
+        item = kwargs.get('item', None)
+        item_name = item.name if item else None
+
+        spk = Util.get_default_msg_no('wave')
+        if not player.has_item(item_name):
+            spk = 29
+        if item_name != 'rod' or not location.is_item_present('fissure') or not player.has_item('rod'): # .OR.CLOSNG
+            Util.print_message(spk)
+            return
+        fissure = game.objects['fissure']
+        fissure.prop = 1 - fissure.prop
+        fissure.get_message(2 - fissure.prop)
+
     @classmethod  # 9130
     def pour(cls, **kwargs):
         player = kwargs['player']
@@ -113,9 +130,10 @@ class Command:
             door = game.objects['door']
             door.prop = 0
             if item_name == 'oil':
-                spk = 113 + door.prop
-                Util.print_message(spk)
-                return
+                door.prop = 1
+            spk = 113 + door.prop
+            Util.print_message(spk)
+            return
         elif item_name != 'water':
             Util.print_message(112)
             return
@@ -332,7 +350,7 @@ class Command:
 
         # IF(TOTING(ROD2).AND.OBJ.EQ.ROD.AND..NOT.TOTING(ROD))OBJ=ROD2
         spk = Util.get_default_msg_no('get')
-        if not player.has_item(item.name):
+        if not player.has_item(item_name):
             Util.print_message(spk)
             return
 
@@ -391,8 +409,8 @@ class Command:
                         return
                     else:
                         raise NotImplementedError('#9028')
-    # 8040, 9040
-    @classmethod
+
+    @classmethod # 8040, 9040
     def open(cls, opposite=False, **kwargs):
         player = kwargs['player']
         location = player.location
@@ -406,7 +424,6 @@ class Command:
                 item_name = 'oyste'
             elif location.is_item_present('door'):
                 item_name = 'door'
-                item = player.location[item_name]
             elif location.is_item_present('grate'):
                 item_name = 'grate'
             # IF(OBJ.NE.0.AND.HERE(CHAIN))GOTO 8000
@@ -415,6 +432,7 @@ class Command:
             else:
                 Util.print_message(28)
                 return
+        item = player.location.objects[item_name]
 
         if item_name in ['clam', 'oyste']:  # 9046
             spk = 124  # A GLISTENING PEARL FALLS OUT OF THE CLAM AND ROLLS AWAY. GOODNESS, THIS MUST REALLY BE AN OYSTER. (I NEVER WAS VERY GOOD AT IDENTIFYING BIVALVES.) WHATEVER IT IS, IT HAS NOW SNAPPED SHUT AGAIN.
@@ -424,7 +442,7 @@ class Command:
                 spk = 125  # THE OYSTER CREAKS OPEN, REVEALING NOTHING BUT OYSTER INSIDE. IT PROMPTLY SNAPS SHUT AGAIN.
             if player.has_item(item_name):
                 spk = 120 + k
-            if not player.has_item('TRIDNT'):
+            if not player.has_item('trident'):
                 spk = 122 + k  # YOU DON'T HAVE ANYTHING STRONG ENOUGH TO OPEN THE CLAM.
             if opposite:
                 spk = 61  # WHAT?
@@ -438,9 +456,9 @@ class Command:
                 # CALL DROP(PEARL, 105)
                 Util.print_message(spk)
                 return
-        elif item_name == 'door':
+        elif item_name == 'door' and item.prop != 1:
             spk = 111
-        elif item_name == 'door' and item.pop == 1:
+        elif item_name == 'door' and item.prop == 1:
             spk = 54
         elif item_name == 'cage':
             spk = 32

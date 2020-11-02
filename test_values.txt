@@ -48,4 +48,42 @@ d
 fill bottl
 u
 w
+hole
+d
+climb
+road
+w
+get eggs
+n
+open door
+pour oil
+open door
+n
+get trident
+drop bottl
+w
+d
+se
+se
+e
+w
+ne
+e
 u
+e
+u
+n
+plugh
+drop rug, eggs, trident, keys
+xyzzy
+get rod
+w
+w
+d
+w
+d
+w
+wave rod
+drop rod
+w
+get diamo

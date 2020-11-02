@@ -33,7 +33,7 @@ class Player:
     def drop_item(self, item: Item) -> None:
         print(f'{item.name}: Dropped/ Released.')
         self.items.remove(item)
-        item.move(self.location)
+        item.move(self.location.name)
 
     def destroy_item(self, item_name: str) -> None:
         """
@@ -77,7 +77,7 @@ class Player:
 
         dest_info = self.location.destinations.get(direction, None)
         dest = None
-        # print('***', self.location.name, direction, dest_info)
+        print('***', self.location.name, direction, dest_info)
         while not dest:
             if isinstance(dest_info, str):
                 dest = game.locations.get(dest_info)
@@ -85,23 +85,33 @@ class Player:
                 if isinstance(dest_info[0], str):
                     dest = game.locations.get(dest_info[0])
                     default_dest_info = self.location.destinations.get('default', None)
-                    if dest_info[1][0] == 'PROPERTY (must not be)':
-                        item = game.objects[dest_info[1][1]]
-                        if item.prop == dest_info[1][2]:
-                            dest_info, dest = default_dest_info, None
-                    elif dest_info[1][0] == 'REQUIRED_OBJECT':
-                        item = game.objects[dest_info[1][1]]
-                        if not self.has_item(item.name):
-                            dest_info, dest = default_dest_info, None
-                    elif dest_info[1][0] == 'PROBABILITY':
-                        # TODO replace None with Util.pct(dest_info[1][1]) after test
-                        if None:
-                            dest_info, dest = default_dest_info, None
-                    elif dest_info[1][0] == 'REQUIRED_OBJECT_IN_ROOM':
-                        if not (self.location.is_item_present('snake') or self.has_item('snake')):
-                            dest_info, dest = default_dest_info, None
+                    if dest_info[0] == 'MESSAGE':
+                        Util.print_message(dest_info[1])
+                        if dest_info[2]:
+                            if dest_info[2][0] == 'PROPERTY (must not be)':
+                                item = game.objects[dest_info[2][1]]
+                                if item.prop == dest_info[2][2]:
+                                    dest_info, dest = default_dest_info, None
+                        else:
+                            return
                     else:
-                        raise NotImplemented('The move is not implemented!')
+                        if dest_info[1][0] == 'PROPERTY (must not be)':
+                            item = game.objects[dest_info[1][1]]
+                            if item.prop == dest_info[1][2]:
+                                dest_info, dest = default_dest_info, None
+                        elif dest_info[1][0] == 'REQUIRED_OBJECT':
+                            item = game.objects[dest_info[1][1]]
+                            if not self.has_item(item.name):
+                                dest_info, dest = default_dest_info, None
+                        elif dest_info[1][0] == 'PROBABILITY':
+                            # TODO replace None with Util.pct(dest_info[1][1]) after test
+                            if None:
+                                dest_info, dest = default_dest_info, None
+                        elif dest_info[1][0] == 'REQUIRED_OBJECT_IN_ROOM':
+                            if not (self.location.is_item_present('snake') or self.has_item('snake')):
+                                dest_info, dest = default_dest_info, None
+                        else:
+                            raise NotImplemented('The move is not implemented!')
             else:
                 break
 
@@ -114,6 +124,7 @@ class Player:
             self.trajectory.append(self.location.name)
             return self.location
 
+        # 'hole': ('MESSAGE', 148, None)
         # 'road': (0, None)
         # 'slit': (('MESSAGE', 95), None, None),
         # 'jump': (('MESSAGE', 96), None, ('PROPERTY (must not be)', 12, 0)),
