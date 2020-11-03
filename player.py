@@ -55,9 +55,9 @@ class Player:
         """
         return any(i.name == item_name for i in self.items)
 
-    def items_count(self):
+    def item_count(self):
         """
-        Returns the number of items the player carries
+        Returns total number of items the player carries
         """
         return len(self.items)
 
@@ -92,6 +92,9 @@ class Player:
                                 item = game.objects[dest_info[2][1]]
                                 if item.prop == dest_info[2][2]:
                                     dest_info, dest = default_dest_info, None
+                            elif dest_info[2][0] == 'REQUIRED_OBJECT_IN_ROOM':
+                                if not (self.location.is_item_present(dest_info[2][1]) or self.has_item(dest_info[2][1])):
+                                    dest_info, dest = default_dest_info, None
                         else:
                             return
                     else:
@@ -108,7 +111,7 @@ class Player:
                             if None:
                                 dest_info, dest = default_dest_info, None
                         elif dest_info[1][0] == 'REQUIRED_OBJECT_IN_ROOM':
-                            if not (self.location.is_item_present('snake') or self.has_item('snake')):
+                            if not (self.location.is_item_present(dest_info[1][1]) or self.has_item(dest_info[1][1])):
                                 dest_info, dest = default_dest_info, None
                         else:
                             raise NotImplemented('The move is not implemented!')
@@ -126,8 +129,7 @@ class Player:
 
         # 'hole': ('MESSAGE', 148, None)
         # 'road': (0, None)
-        # 'slit': (('MESSAGE', 95), None, None),
-        # 'jump': (('MESSAGE', 96), None, ('PROPERTY (must not be)', 12, 0)),
+        # 'over': ('MESSAGE', 160, ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
 
     def move(self, loc: Location):
         if self.location != loc:

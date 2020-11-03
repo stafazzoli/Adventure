@@ -303,7 +303,7 @@ class Command:
                 # elif player.has_item('bottle') or location.is_item_present('bottle') and Util.get_liquid_no() == item.index:
                 #     pass
             else:
-                if player.items_count() < 7:
+                if player.item_count() < 7:
                     if item_name != 'bird' or (item_name == 'bird' and item.prop != 0):
                         if (item_name == 'bird' or item_name == 'cage') and game.objects['bird'].prop != 0:
                             bird_index, cage_index = game.objects['bird'].index, game.objects['cage'].index
@@ -349,7 +349,7 @@ class Command:
         item_name = item.name if item else None
 
         # IF(TOTING(ROD2).AND.OBJ.EQ.ROD.AND..NOT.TOTING(ROD))OBJ=ROD2
-        spk = Util.get_default_msg_no('get')
+        spk = Util.get_default_msg_no('drop')
         if not player.has_item(item_name):
             Util.print_message(spk)
             return

@@ -529,14 +529,15 @@ travel_table = {
     'dead_end_3': {'se': 'maze_5'},
     'ne_end': {'sw': 'sw_end'},
     'sw_end': {'ne': 'ne_end', 'd': ('MESSAGE', 93, None)},
-    'sw_side_of_chasm': {'sw': 'sloping_corridor', 'over': (
-        'MESSAGE', 160, ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
+    'sw_side_of_chasm': {'sw': 'sloping_corridor',
+                         'over': ('MESSAGE', 160,
+                                  ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
                          'acros': ('MESSAGE', 160,
                                    ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
                          'cross': ('MESSAGE', 160,
                                    ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
                          'ne': ('MESSAGE', 160,
-                                ('REQUIRED_OBJECT_IN_ROOM', 33)),
+                                ('REQUIRED_OBJECT_IN_ROOM', 'troll')),
                          'default': ('MESSAGE', 96, None),
                          'jump': (
                          'didnt_makeit', ('PROPERTY (must not be)', 'chasm', 0))},

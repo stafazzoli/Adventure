@@ -68,9 +68,9 @@ class Adventure:
         while True:
             locations[self.player.location.name].print_info(objects['lantern'], self.player)
 
-            available_exists = {dest for dir, dest in locations[self.player.location.name].destinations.items()}
+            # available_exists = {dest for dir, dest in locations[self.player.location.name].destinations.items()}
             # direction = input(f"Available exits are:\n{available_exists}\n:").casefold()
-            direction = input(f":").casefold()
+            direction = input(":").casefold()
             from colorama import Fore, Style
             print(Fore.YELLOW, direction, Style.RESET_ALL)
 
@@ -80,8 +80,6 @@ class Adventure:
                 word = re.sub(r'[^a-zA-Z]', '', d)[:6]
                 if w := Util.get_word_info(word):
                     what_to_do.append(w)
-
-            # print("****", what_to_do)
 
             if what_to_do:
                 vocab_type, value = what_to_do[0]

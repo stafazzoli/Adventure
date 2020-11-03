@@ -87,3 +87,59 @@ wave rod
 drop rod
 w
 get diamo
+n
+road
+s
+s
+n
+s
+n
+s
+s
+s
+n
+e
+d
+w
+d
+s
+get gold
+n
+w
+e
+n
+w
+get coins
+n
+e
+n
+get silve
+n
+plugh
+drop silve, coins, nugge, diamo
+drop silve
+get keys, food, eggs
+plugh
+s
+d
+w
+d
+w
+w
+w
+w
+pit
+climb
+road
+w
+e
+s
+s
+n
+w
+n
+n
+w
+d
+sw
+u

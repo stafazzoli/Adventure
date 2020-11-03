@@ -61,11 +61,18 @@ class Location:
         self.print_description(lamp, player)
         if not self.is_dark(lamp, player):
             for item in self.objects.values():
-                if item.prop <= 0:
+                msg_prop = None
+
+                if item.name == 'steps' and player.has_item('nugget'):
+                    continue
+                elif item.prop <= 0:
                     item.prop = 0
                     if item.name in ('rug', 'chain'):
                         item.prop = 1
-                item.get_message()
+                    if item.name == 'steps' and self.name == item.locations[1]:
+                        msg_prop = 1
+
+                item.get_message(prop=msg_prop if msg_prop else item.prop)
 
     def is_item_present(self, item_name: str) -> bool:
         return item_name in self.objects
