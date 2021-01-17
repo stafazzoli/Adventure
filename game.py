@@ -1,5 +1,6 @@
 import re
 import sys
+import random
 
 import location
 from commands import Command, Util
@@ -7,12 +8,14 @@ from object import objects_dict, initial_object_locations, Item
 from player import Player
 from data.travel_table import travel_table
 from data.vocabulary import TYPE_MOTION, TYPE_OBJECT, TYPE_ACTION
+from dwarf import Dwarf, dwarves_info
 
 objects = {}
 locations = {}
 
 # HOW OFTEN WE'VE SAID "NOT ALLOWED TO GIVE MORE DETAIL"
 detail = 0
+dwarf_activation_level = 0
 
 
 class Adventure:
@@ -62,11 +65,55 @@ class Adventure:
 
         del _location_objects
 
+        self.dwarves = []
+        for loc, is_pirate in dwarves_info:
+            d = Dwarf(loc, is_pirate)
+            self.dwarves.append(d)
+
         self.player = Player()
+
+    def manage_dwarves(self):
+        global dwarf_activation_level
+        loc = self.player.location
+
+        if not (loc.is_forced() or loc.bitset(3)):
+            for d in self.dwarves:
+                if d.old_loc == loc.name and d.seen:
+                    Util.print_message(2)
+                    break
+
+        if loc.is_forced() or loc.bitset(3):
+            loc.print_desc(self.player)
+        elif dwarf_activation_level != 0:
+            if dwarf_activation_level == 1:
+                # WHEN WE ENCOUNTER THE FIRST DWARF, WE KILL 0, 1, OR 2 OF THE 5 DWARVES.
+                # TODO replace `loc.index < 15` with `loc.index < 15 or Util.pct(95)` after test
+                if loc.index < 15:
+                    loc.print_desc(self.player)
+                else:
+                    dwarf_activation_level = 2
+                    for d in random.sample(self.dwarves, 2):
+                        if Util.pct(50):
+                            d.loc = None
+                    for d in self.dwarves:
+                        if d.loc == loc.name:
+                            d.old_loc = d.loc
+                            d.loc = 'nugget_room'
+                    Util.print_message(3)
+                    loc.add_item(objects['axe'])
+                    loc.print_desc(self.player)
+            else:
+                loc.print_desc(self.player)
+                # print('#6010')
+        elif dwarf_activation_level == 0 and loc.index >= 15:
+            dwarf_activation_level = 1
+            loc.print_desc(self.player)
+        else:
+            loc.print_desc(self.player)
 
     def run(self) -> None:
         while True:
-            locations[self.player.location.name].print_info(objects['lantern'], self.player)
+            self.manage_dwarves()
 
             # available_exists = {dest for dir, dest in locations[self.player.location.name].destinations.items()}
             # direction = input(f"Available exits are:\n{available_exists}\n:").casefold()

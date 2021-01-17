@@ -93,7 +93,9 @@ class Player:
                                 if item.prop == dest_info[2][2]:
                                     dest_info, dest = default_dest_info, None
                             elif dest_info[2][0] == 'REQUIRED_OBJECT_IN_ROOM':
-                                if not (self.location.is_item_present(dest_info[2][1]) or self.has_item(dest_info[2][1])):
+                                if self.location.is_item_present(dest_info[2][1]) or self.has_item(dest_info[2][1]):
+                                    return
+                                else:
                                     dest_info, dest = default_dest_info, None
                         else:
                             return
@@ -123,6 +125,10 @@ class Player:
             return
 
         if self.location != dest:
+            if dest.is_forced():
+                self.trajectory.append(dest)
+                dest.print_desc(self)
+                dest = game.locations.get(dest.destinations['road'], None)
             self.location = dest
             self.trajectory.append(self.location.name)
             return self.location

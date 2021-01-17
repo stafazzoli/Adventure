@@ -29,8 +29,8 @@ class Location:
     def remove_item(self, item: Item) -> None:
         del self.objects[item.name]
 
-    def print_description(self, lamp, player):
-        print('----- ', self.name, self.abb_desc_no)
+    def print_info(self, lamp, player):
+        # print('----- ', self.name, self.abb_desc_no)
         if not self.short_description or (self.abb_desc_no % ABBNUM == 0):
             desc = self.description
         else:
@@ -57,22 +57,12 @@ class Location:
             self.abb_desc_no += 1
             Util.color_print('LOC_INFO', desc)
 
-    def print_info(self, lamp, player) -> None:
-        self.print_description(lamp, player)
+    def print_desc(self, player) -> None:
+        lamp = game.objects['lantern']
+        self.print_info(lamp, player)
         if not self.is_dark(lamp, player):
             for item in self.objects.values():
-                msg_prop = None
-
-                if item.name == 'steps' and player.has_item('nugget'):
-                    continue
-                elif item.prop <= 0:
-                    item.prop = 0
-                    if item.name in ('rug', 'chain'):
-                        item.prop = 1
-                    if item.name == 'steps' and self.name == item.locations[1]:
-                        msg_prop = 1
-
-                item.get_message(prop=msg_prop if msg_prop else item.prop)
+                item.print_info()
 
     def is_item_present(self, item_name: str) -> bool:
         return item_name in self.objects
@@ -93,6 +83,13 @@ class Location:
         oil = game.objects['oil'].index
         liq2 = lambda x: (1 - x) * water + (x // 2) * (water + oil)
         return liq2(((self.cond // 2 * 2) % 8 - 5) * (self.cond // 4 % 2 + 1))
+
+    def bitset(self, n: int) -> bool:
+        """
+        TRUE IF COND(L) HAS BIT N SET (BIT 0 IS UNITS BIT)
+        :return:
+        """
+        return bool(self.cond & (1 << n))
 
     def __str__(self):
         return f"{self.name}: {self.description}: {self.short_description}: {self.objects}: {self.cond}"

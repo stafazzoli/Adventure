@@ -81,6 +81,39 @@ class Util:
 
 
 class Command:
+    @classmethod  # 9170
+    def throw(cls, **kwargs):
+        player = kwargs['player']
+        location = player.location
+        item = kwargs.get('item', None)
+        item_name = item.name if item else None
+
+        # IF(TOTING(ROD2).AND.OBJ.EQ.ROD.AND..NOT.TOTING(ROD))OBJ=ROD2
+        spk = Util.get_default_msg_no('throw')
+        if not item:
+            raise NotImplementedError('#8000')
+        elif not player.has_item(item_name):
+            Util.print_message(spk)
+            return
+
+        if item.is_treasure and location.is_item_present('troll'):
+            spk = 159
+            player.drop_item(item)
+            item.move(None)
+            item.move(None, True)
+            phony_troll = game.object['phony troll']
+            phony_troll.move(item.initial_location[0])
+            phony_troll.move(item.initial_location[1])
+            Util.print_message(spk)
+
+    #   CALL DROP(OBJ,0)
+    # 	CALL MOVE(TROLL,0)
+    # 	CALL MOVE(TROLL+100,0)
+    # 	CALL DROP(TROLL2,PLAC(TROLL))
+    # 	CALL DROP(TROLL2+100,FIXD(TROLL))
+    # 	CALL JUGGLE(CHASM)
+    # 	GOTO 2011
+
     @classmethod  # 9090
     def wave(cls, **kwargs):
         player = kwargs['player']
@@ -96,7 +129,7 @@ class Command:
             return
         fissure = game.objects['fissure']
         fissure.prop = 1 - fissure.prop
-        fissure.get_message(2 - fissure.prop)
+        fissure.print_message(2 - fissure.prop)
 
     @classmethod  # 9130
     def pour(cls, **kwargs):
@@ -139,7 +172,7 @@ class Command:
             return
         else:
             plant, phony_plant = game.objects['plant'], game.objects['phony plant']
-            plant.get_message(plant.prop + 1)
+            plant.print_message(plant.prop + 1)
             plant.prop = plant.prop + 2 % 6
             phony_plant.prop = plant.prop // 2
         # 	K=NULL
@@ -180,7 +213,7 @@ class Command:
                     resp = Util.get_response()
                     if resp not in ('y', 'yes'):
                         return
-                    item.get_message(1)
+                    item.print_message(1)
                     item.prop = 2
                     game.objects['rug'].prop = 0
                     k = sum(game.locations[loc].index for loc in item.locations) // 2
@@ -273,7 +306,7 @@ class Command:
         Util.print_message(spk)
         return
 
-    @classmethod  # 8010 with/ without item
+    @classmethod  # 8010, 9010
     def get(cls, **kwargs) -> None:
         player = kwargs['player']
         location = player.location

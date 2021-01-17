@@ -18,6 +18,7 @@ d
 d
 relea bird
 drop cage
+get axe
 sw
 w
 kill drago

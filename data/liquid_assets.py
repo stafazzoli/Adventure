@@ -1,3 +1,4 @@
+from data.travel_table import travel_table
 """
 #  SECTION 9: LIQUID ASSETS, ETC.  EACH LINE CONTAINS A NUMBER (N) AND UP TO 20
 #	LOCATION NUMBERS.  BIT N (WHERE 0 IS THE UNITS BIT) IS SET IN COND(LOC)
@@ -55,11 +56,14 @@ liquid_assets = (
 )
 
 
-def get_cond(location_name: str) -> int:
-    bin_cond = 0
+def get_cond(loc_name: str) -> int:
+    cond = 0
     for index, value in enumerate(liquid_assets):
-        if location_name in value:
-            bin_cond = bin_cond | 1 << index
+        if loc_name in value:
+            cond = cond | 1 << index
 
-    return bin_cond
+    # forced-motion
+    if list(travel_table[loc_name])[0] == 'road':
+        cond = 2
 
+    return cond

@@ -29,11 +29,10 @@ class Item:
         for message in messages:
             self.messages.append(message)
 
-        self.prop = 0
-        if self.index > 50:
-            self.prop = -1  # treasures have prop -1.
+        self.is_treasure = False if self.index < 50 else True
+        self.prop = 0 if self.index < 50 else -1    # treasures have prop -1.
 
-        self.initial_location = locations  # a tuple, see 7 below
+        self.initial_location = locations           # a tuple, see 7 below
         self.location = self.initial_location[0]    # location1: str
         self.locations = self.initial_location[:2]  # tuple(location1: str, location2: str)
         self.immovable = self.initial_location[2]
@@ -58,10 +57,24 @@ class Item:
         elif loc2:
             self.locations = (self.locations[0], loc_name)
 
-    def get_message(self, prop: int = None) -> str:
+    def print_message(self, prop: int = None) -> None:
         prop_msg = prop if prop else self.prop
         if (msg := self.messages[prop_msg]) != '>$<':
             Util.color_print('ITEM_INFO', msg)
+
+    def print_info(self):
+        msg_prop = None
+
+        if self.name == 'steps' and 'player' in game.objects[self.name].locations:
+            return
+        elif self.prop <= 0:
+            self.prop = 0
+            if self.name in ('rug', 'chain'):
+                self.prop = 1
+            if self.name == 'steps' and self.name == self.locations[1]:
+                msg_prop = 1
+
+        self.print_message(prop=msg_prop if msg_prop else self.prop)
 
     def __str__(self):
         return f"{self.index}-{self.name}:: {self.description}: {self.messages}: {self.prop}: " \
